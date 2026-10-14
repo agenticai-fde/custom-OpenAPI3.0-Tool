@@ -1,0 +1,747 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Clinic Appointment API",
+    "description": "A demo API for a small clinic. Find a doctor, check free slots, and book or cancel appointments for a patient.\n\n**All data is fictional and resets when the server restarts.**",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://liqueur-unmixed-revolt.ngrok-free.dev",
+      "description": "Clinic API server"
+    }
+  ],
+  "paths": {
+    "/doctors": {
+      "get": {
+        "tags": [
+          "Doctors"
+        ],
+        "summary": "List doctors",
+        "description": "Returns doctors for the given specialty (defaults to general medicine).",
+        "operationId": "listDoctors",
+        "parameters": [
+          {
+            "name": "specialty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Specialty",
+              "description": "Only return doctors with this specialty.",
+              "default": "general"
+            },
+            "description": "Only return doctors with this specialty."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Doctor"
+                  },
+                  "title": "Response Listdoctors"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doctors/{doctor_id}/slots": {
+      "get": {
+        "tags": [
+          "Doctors"
+        ],
+        "summary": "Get free slots for a doctor",
+        "description": "Returns the free 30-minute slots for a doctor on a date. Empty list if the doctor doesn't work that day.",
+        "operationId": "getAvailableSlots",
+        "parameters": [
+          {
+            "name": "doctor_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Doctor ID, e.g. D001.",
+              "title": "Doctor Id"
+            },
+            "description": "Doctor ID, e.g. D001."
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "description": "Date to check (YYYY-MM-DD).",
+              "title": "Date"
+            },
+            "description": "Date to check (YYYY-MM-DD)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailableSlots"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patients/{patient_id}": {
+      "get": {
+        "tags": [
+          "Patients"
+        ],
+        "summary": "Get a patient",
+        "description": "Returns basic patient details, including known allergies.",
+        "operationId": "getPatient",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Patient ID, e.g. P100.",
+              "title": "Patient Id"
+            },
+            "description": "Patient ID, e.g. P100."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Patient"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patients/{patient_id}/appointments": {
+      "get": {
+        "tags": [
+          "Patients"
+        ],
+        "summary": "List a patient's appointments",
+        "description": "Returns all appointments (booked and cancelled) for a patient.",
+        "operationId": "listPatientAppointments",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Patient ID, e.g. P100.",
+              "title": "Patient Id"
+            },
+            "description": "Patient ID, e.g. P100."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Appointment"
+                  },
+                  "title": "Response Listpatientappointments"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/appointments": {
+      "post": {
+        "tags": [
+          "Appointments"
+        ],
+        "summary": "Book an appointment",
+        "description": "Books a slot for a patient. Call getAvailableSlots first to find a free time.",
+        "operationId": "bookAppointment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Slot is not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/appointments/{appointment_id}": {
+      "get": {
+        "tags": [
+          "Appointments"
+        ],
+        "summary": "Get an appointment",
+        "operationId": "getAppointment",
+        "parameters": [
+          {
+            "name": "appointment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Appointment ID, e.g. A1.",
+              "title": "Appointment Id"
+            },
+            "description": "Appointment ID, e.g. A1."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Appointments"
+        ],
+        "summary": "Cancel an appointment",
+        "description": "Marks the appointment as cancelled and frees the slot.",
+        "operationId": "cancelAppointment",
+        "parameters": [
+          {
+            "name": "appointment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Appointment ID, e.g. A1.",
+              "title": "Appointment Id"
+            },
+            "description": "Appointment ID, e.g. A1."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Appointment": {
+        "properties": {
+          "patient_id": {
+            "type": "string",
+            "title": "Patient Id",
+            "description": "ID of the patient, e.g. P100."
+          },
+          "doctor_id": {
+            "type": "string",
+            "title": "Doctor Id",
+            "description": "ID of the doctor, e.g. D001."
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date",
+            "description": "Appointment date (YYYY-MM-DD)."
+          },
+          "time": {
+            "type": "string",
+            "pattern": "^\\d{2}:\\d{2}$",
+            "title": "Time",
+            "description": "Start time in HH:MM, must be a free slot."
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Reason",
+            "description": "Short reason for the visit."
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique appointment ID."
+          },
+          "status": {
+            "$ref": "#/components/schemas/AppointmentStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "patient_id",
+          "doctor_id",
+          "date",
+          "time",
+          "reason",
+          "id",
+          "status"
+        ],
+        "title": "Appointment",
+        "example": {
+          "date": "2026-10-19",
+          "doctor_id": "D001",
+          "id": "A1",
+          "patient_id": "P100",
+          "reason": "Chest pain follow-up",
+          "status": "booked",
+          "time": "09:30"
+        }
+      },
+      "AppointmentRequest": {
+        "properties": {
+          "patient_id": {
+            "type": "string",
+            "title": "Patient Id",
+            "description": "ID of the patient, e.g. P100."
+          },
+          "doctor_id": {
+            "type": "string",
+            "title": "Doctor Id",
+            "description": "ID of the doctor, e.g. D001."
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date",
+            "description": "Appointment date (YYYY-MM-DD)."
+          },
+          "time": {
+            "type": "string",
+            "pattern": "^\\d{2}:\\d{2}$",
+            "title": "Time",
+            "description": "Start time in HH:MM, must be a free slot."
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Reason",
+            "description": "Short reason for the visit."
+          }
+        },
+        "type": "object",
+        "required": [
+          "patient_id",
+          "doctor_id",
+          "date",
+          "time",
+          "reason"
+        ],
+        "title": "AppointmentRequest",
+        "example": {
+          "date": "2026-10-19",
+          "doctor_id": "D001",
+          "patient_id": "P100",
+          "reason": "Chest pain follow-up",
+          "time": "09:30"
+        }
+      },
+      "AppointmentStatus": {
+        "type": "string",
+        "enum": [
+          "booked",
+          "cancelled"
+        ],
+        "title": "AppointmentStatus"
+      },
+      "AvailableSlots": {
+        "properties": {
+          "doctor_id": {
+            "type": "string",
+            "title": "Doctor Id"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "slots": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Slots",
+            "description": "Free start times in 24-hour HH:MM format."
+          }
+        },
+        "type": "object",
+        "required": [
+          "doctor_id",
+          "date",
+          "slots"
+        ],
+        "title": "AvailableSlots",
+        "example": {
+          "date": "2026-10-19",
+          "doctor_id": "D001",
+          "slots": [
+            "09:00",
+            "09:30",
+            "11:00"
+          ]
+        }
+      },
+      "Doctor": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique doctor ID."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Doctor's full name."
+          },
+          "specialty": {
+            "$ref": "#/components/schemas/Specialty"
+          },
+          "working_days": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Working Days",
+            "description": "Days of the week the doctor sees patients."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "specialty",
+          "working_days"
+        ],
+        "title": "Doctor",
+        "example": {
+          "id": "D001",
+          "name": "Dr. Asha Rao",
+          "specialty": "cardiology",
+          "working_days": [
+            "Monday",
+            "Wednesday",
+            "Friday"
+          ]
+        }
+      },
+      "ErrorResponse": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Human-readable error message."
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorResponse",
+        "example": {
+          "detail": "Doctor D999 not found"
+        }
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Patient": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique patient ID."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "age": {
+            "type": "integer",
+            "maximum": 130.0,
+            "minimum": 0.0,
+            "title": "Age"
+          },
+          "allergies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Allergies",
+            "description": "Known allergies. Empty list if none."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "age",
+          "allergies"
+        ],
+        "title": "Patient",
+        "example": {
+          "age": 42,
+          "allergies": [
+            "penicillin"
+          ],
+          "id": "P100",
+          "name": "Ravi Kumar"
+        }
+      },
+      "Specialty": {
+        "type": "string",
+        "enum": [
+          "general",
+          "cardiology",
+          "dermatology",
+          "pediatrics"
+        ],
+        "title": "Specialty"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Doctors",
+      "description": "Browse doctors and their free appointment slots."
+    },
+    {
+      "name": "Patients",
+      "description": "Look up patient records (sample data only)."
+    },
+    {
+      "name": "Appointments",
+      "description": "Book, view and cancel appointments."
+    }
+  ]
+}
